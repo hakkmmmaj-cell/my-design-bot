@@ -1,0 +1,15 @@
+import random
+
+number = random.randint(1, 10)
+guess = -1
+
+print("خمن رقم من 1 إلى 10")
+
+while guess != number:
+    guess = int(input("ادخل رقم: "))
+    if guess < number:
+        print("أكبر")
+    elif guess > number:
+        print("أصغر")
+
+print("صح! فزت 🎉")

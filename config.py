@@ -1,0 +1,4 @@
+BOT_TOKEN = "8656297195:AAHCaNApCb0oi6lElpvxamf3uL8-L9DaRec"
+ADMIN_ID = 123456789
+DOWNLOAD_DIR = "downloads"
+DB_FILE = "bot.db"
