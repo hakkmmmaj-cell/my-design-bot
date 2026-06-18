@@ -1,0 +1,6 @@
+yt-dlp
+python-telegram-bot
+pyTelegramBotAPI
+moviepy
+Pillow
+requests
