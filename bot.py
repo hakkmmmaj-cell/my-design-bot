@@ -2,6 +2,7 @@ import os
 import asyncio
 from aiogram import Bot, Dispatcher, types
 import google.generativeai as genai
+TOKEN = '8835938014:AAEE7yIeXt7K3EkUUmxUyI4vAt5O4_Q'
 
 # إعداد التوكن (مباشر لأننا جربناه واشتغل)
 TOKEN = ''8835938014:AAEE7yIeXt7K3EkUUmxUyl4vAtO_LkTwJn8" 
