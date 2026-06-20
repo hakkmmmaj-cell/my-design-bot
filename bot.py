@@ -1,41 +1,71 @@
-import os
-import sys
-import subprocess
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    CallbackQueryHandler,
+    ContextTypes
+)
 
-# 1. تثبيت المكتبات فوراً وقبل استيراد أي شيء
-def install(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+BOT_TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
 
-try:
-    import aiogram
-    import google.generativeai
-    import moviepy
-except ImportError:
-    install("aiogram")
-    install("google-generativeai")
-    install("moviepy")
 
-# 2. الآن استورد المكتبات بعد أن تأكدنا من تثبيتها
-import asyncio
-from aiogram import Bot, Dispatcher, types
-import google.generativeai as genai
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-# التوكن الجديد
-TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
-bot = Bot(token=TOKEN)
-dp = Dispatcher()
+    keyboard = [
+        [InlineKeyboardButton("📥 تحميل فيديو", callback_data="video")],
+        [InlineKeyboardButton("🎵 تحويل MP3", callback_data="mp3")],
+        [InlineKeyboardButton("📊 الإحصائيات", callback_data="stats")]
+    ]
 
-# إعداد Gemini
-genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-model = genai.GenerativeModel('gemini-1.5-flash')
+    await update.message.reply_text(
+        f"""
+👋 أهلاً وسهلاً {update.effective_user.first_name}
 
-@dp.message()
-async def chat(message: types.Message):
-    response = model.generate_content(message.text)
-    await message.answer(response.text)
+━━━━━━━━━━━━━━━━━━━━
 
-async def main():
-    await dp.start_polling(bot)
+🤖 بوت أبوك كيان في خدمتك
 
-if __name__ == "__main__":
-    asyncio.run(main())
+📥 تحميل فيديوهات TikTok
+🎵 تحويل الفيديو إلى MP3
+⚡ سرعة تحميل عالية
+
+━━━━━━━━━━━━━━━━━━━━
+
+👑 المطور: كيان
+⚙️ جميع الحقوق محفوظة
+
+اختر الخدمة من الأزرار بالأسفل 👇
+""",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+
+async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == "video":
+        await query.message.reply_text(
+            "📥 أرسل رابط TikTok"
+        )
+
+    elif query.data == "mp3":
+        await query.message.reply_text(
+            "🎵 أرسل الرابط للتحويل MP3"
+        )
+
+    elif query.data == "stats":
+        await query.message.reply_text(
+            "📊 الإحصائيات غير مفعلة حالياً"
+        )
+
+
+app = Application.builder().token(BOT_TOKEN).build()
+
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CallbackQueryHandler(buttons))
+
+print("Bot Running...")
+
+app.run_polling()
