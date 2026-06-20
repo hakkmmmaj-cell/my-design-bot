@@ -1,4 +1,6 @@
 aiogram
 yt-dlp
-Pillow
+pillow
 moviepy
+aiofiles
+python-dotenv
