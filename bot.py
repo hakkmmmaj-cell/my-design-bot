@@ -1,67 +1,52 @@
 import asyncio
-import sqlite3
 import os
+import requests
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from PIL import Image, ImageEnhance, ImageFilter
 import yt_dlp
 
-TOKEN = '8835938014:AAEE7yIeXt7K3EkUUmxUyl4vAtO_LkTwJn8' # ضع التوكن الخاص بك هنا
+TOKEN = '8835938014:AAEE7yIeXt7K3EkUUmxUyl4vAtO_LkTwJn8'
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# قاعدة البيانات
-def init_db():
-    conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
-    cursor.execute('CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY)')
-    conn.commit()
-    conn.close()
+# 1. تحميل فيديو تيك توك
+@dp.message(F.text.contains("tiktok.com"))
+async def download_tiktok(message: types.Message):
+    await message.answer("🔄 جاري تحميل الفيديو من تيك توك، انتظر قليلاً...")
+    url = message.text
+    ydl_opts = {'outtmpl': 'video.mp4', 'format': 'best'}
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+        await message.answer_video(types.FSInputFile("video.mp4"))
+        os.remove("video.mp4")
+    except Exception as e:
+        await message.answer(f"❌ حدث خطأ أثناء التحميل: {e}")
 
-def add_user(user_id):
-    conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
-    cursor.execute('INSERT OR IGNORE INTO users (user_id) VALUES (?)', (user_id,))
-    conn.commit()
-    conn.close()
-
-def get_all_users():
-    conn = sqlite3.connect('users.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT user_id FROM users')
-    users = cursor.fetchall()
-    conn.close()
-    return [u[0] for u in users]
-
-# الأوامر
-@dp.message(Command("start"))
-async def start_cmd(message: types.Message):
-    add_user(message.from_user.id)
-    await message.answer(f"أهلاً بك {message.from_user.first_name}!\nأبو كيان يرحب بك في بوت الخدمات.")
-
-@dp.message(Command("broadcast"))
-async def broadcast(message: types.Message):
-    MY_ID = 6705284698
-‪  # <--- ضع رقمك الشخصي هنا
-    if message.from_user.id != MY_ID:
-        return
-    msg_text = message.text.replace("/broadcast ", "")
-    for user_id in get_all_users():
-        try: await bot.send_message(user_id, msg_text)
-        except: pass
-    await message.answer("تمت الإذاعة!")
-
-# الفلاتر والتحميل (نفس الكود السابق...)
+# 2. تعديل الصور (فلاتر احترافية)
 @dp.message(F.photo)
-async def handle_photo(message: types.Message):
-    file = await bot.get_file(message.photo[-1].file_id)
-    await bot.download_file(file.file_path, f"img_{message.from_user.id}.jpg")
-    await message.answer("تم حفظ الصورة، اختر الفلتر.")
+async def process_photo(message: types.Message):
+    photo_path = f"photo_{message.from_user.id}.jpg"
+    await bot.download(message.photo[-1], destination=photo_path)
+    
+    # تطبيق فلتر "ايفون" (زيادة التباين والتشبع)
+    img = Image.open(photo_path)
+    enhancer = ImageEnhance.Color(img)
+    img = enhancer.enhance(1.3) # تشبع ألوان
+    enhancer = ImageEnhance.Contrast(img)
+    img = enhancer.enhance(1.2) # تباين
+    img.save("filtered.jpg")
+    
+    await message.answer_photo(types.FSInputFile("filtered.jpg"), caption="✨ تم تطبيق فلتر الألوان الاحترافي")
+    
+    # تنظيف الملفات
+    os.remove(photo_path)
+    os.remove("filtered.jpg")
 
 async def main():
-    init_db()
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
     asyncio.run(main())
+ 
