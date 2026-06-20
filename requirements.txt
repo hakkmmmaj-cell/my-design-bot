@@ -1,5 +1,0 @@
-aiogram
-yt-dlp
-Pillow
-opencv-python
-numpy
