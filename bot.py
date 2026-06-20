@@ -42,7 +42,8 @@ async def start_cmd(message: types.Message):
 
 @dp.message(Command("broadcast"))
 async def broadcast(message: types.Message):
-    MY_ID = 6705284698‪  # <--- ضع رقمك الشخصي هنا
+    MY_ID = 6705284698
+‪  # <--- ضع رقمك الشخصي هنا
     if message.from_user.id != MY_ID:
         return
     msg_text = message.text.replace("/broadcast ", "")
