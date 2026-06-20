@@ -2,15 +2,13 @@ import os
 import asyncio
 from aiogram import Bot, Dispatcher, types
 import google.generativeai as genai
-TOKEN = '8835938014:AAEE7yIeXt7K3EkUUmxUyI4vAt5O4_Q'
 
-# إعداد التوكن (مباشر لأننا جربناه واشتغل)
-TOKEN = ''8835938014:AAEE7yIeXt7K3EkUUmxUyl4vAtO_LkTwJn8" 
+# هذا التوكن الخاص بك، لا تضع علامات تنصيص إضافية
+TOKEN = "8835938014:AAEE7yIeXt7K3EkUUmxUyI4vAt5O4_Q"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# إعداد مفتاح جيمناي (يسحب من الـ Variables اللي ضفناها في Railway)
-# تأكد أن اسم المتغير في Railway هو بالضبط: GEMINI_API_KEY
+# إعداد مفتاح جيمناي من الـ Variables
 gemini_key = os.getenv('GEMINI_API_KEY')
 genai.configure(api_key=gemini_key)
 model = genai.GenerativeModel('gemini-1.5-flash')
@@ -23,7 +21,7 @@ async def chat_handler(message: types.Message):
         response = model.generate_content(message.text)
         await message.answer(response.text)
     except Exception as e:
-        await message.answer(f"صار خطأ: {e}")
+        await message.answer("حدث خطأ في الرد، تأكد من مفتاح Gemini في الـ Variables.")
 
 async def main():
     await dp.start_polling(bot)
