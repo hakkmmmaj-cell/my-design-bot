@@ -4,7 +4,7 @@ from aiogram import Bot, Dispatcher, types
 import google.generativeai as genai
 
 # هذا التوكن الخاص بك، لا تضع علامات تنصيص إضافية
-TOKEN = "8835938014:AAEE7yIeXt7K3EkUUmxUyI4vAt5O4_Q"
+TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
