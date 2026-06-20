@@ -1,71 +1,25 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    CallbackQueryHandler,
-    ContextTypes
-)
+import asyncio
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
 
-BOT_TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
+# ضع التوكن الجديد هنا
+TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
 
+bot = Bot(token=TOKEN)
+dp = Dispatcher()
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# أمر البدء
+@dp.message(Command("start"))
+async def cmd_start(message: types.Message):
+    await message.answer("أهلاً بك يا أبو كيان، البوت يعمل الآن!")
 
-    keyboard = [
-        [InlineKeyboardButton("📥 تحميل فيديو", callback_data="video")],
-        [InlineKeyboardButton("🎵 تحويل MP3", callback_data="mp3")],
-        [InlineKeyboardButton("📊 الإحصائيات", callback_data="stats")]
-    ]
+# الرد على أي رسالة
+@dp.message()
+async def echo(message: types.Message):
+    await message.answer("أهلاً بك يا أبو كيان")
 
-    await update.message.reply_text(
-        f"""
-👋 أهلاً وسهلاً {update.effective_user.first_name}
+async def main():
+    await dp.start_polling(bot)
 
-━━━━━━━━━━━━━━━━━━━━
-
-🤖 بوت أبوك كيان في خدمتك
-
-📥 تحميل فيديوهات TikTok
-🎵 تحويل الفيديو إلى MP3
-⚡ سرعة تحميل عالية
-
-━━━━━━━━━━━━━━━━━━━━
-
-👑 المطور: كيان
-⚙️ جميع الحقوق محفوظة
-
-اختر الخدمة من الأزرار بالأسفل 👇
-""",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-
-
-async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-    query = update.callback_query
-    await query.answer()
-
-    if query.data == "video":
-        await query.message.reply_text(
-            "📥 أرسل رابط TikTok"
-        )
-
-    elif query.data == "mp3":
-        await query.message.reply_text(
-            "🎵 أرسل الرابط للتحويل MP3"
-        )
-
-    elif query.data == "stats":
-        await query.message.reply_text(
-            "📊 الإحصائيات غير مفعلة حالياً"
-        )
-
-
-app = Application.builder().token(BOT_TOKEN).build()
-
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CallbackQueryHandler(buttons))
-
-print("Bot Running...")
-
-app.run_polling()
+if __name__ == "__main__":
+    asyncio.run(main())
