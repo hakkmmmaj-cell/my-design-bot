@@ -1,3 +1,7 @@
-aiogram
-google-generativeai
-moviepy
+python-telegram-bot==21.6
+yt-dlp
+requests
+aiohttp
+Pillow
+ffmpeg-python
+python-dotenv
