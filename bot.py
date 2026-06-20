@@ -13,7 +13,7 @@ TOKEN = os.getenv('TOKEN')
 API_KEY = os.getenv('GEMINI_API_KEY')
 
 # إعداد البوت والذكاء الاصطناعي
-bot = Bot(token=TOKEN)
+bot = Bot(token=8835938014:AAEE7yIeXt7K3EkUUmxUyl4vAtO_LkTwJn8)
 dp = Dispatcher()
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
