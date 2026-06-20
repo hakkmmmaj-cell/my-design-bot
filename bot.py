@@ -1,17 +1,31 @@
 import os
-# هذا السطر سيجبر السيرفر على تحميل المكتبات قبل أي شيء آخر
-os.system("pip install moviepy aiogram google-generativeai")
+import sys
+import subprocess
 
+# 1. تثبيت المكتبات فوراً وقبل استيراد أي شيء
+def install(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+try:
+    import aiogram
+    import google.generativeai
+    import moviepy
+except ImportError:
+    install("aiogram")
+    install("google-generativeai")
+    install("moviepy")
+
+# 2. الآن استورد المكتبات بعد أن تأكدنا من تثبيتها
 import asyncio
 from aiogram import Bot, Dispatcher, types
 import google.generativeai as genai
 
-# التوكن الجديد (الذي استخرجته من BotFather)
+# التوكن الجديد
 TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# إعداد مفتاح جيمناي
+# إعداد Gemini
 genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 model = genai.GenerativeModel('gemini-1.5-flash')
 
