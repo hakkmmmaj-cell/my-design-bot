@@ -1,5 +1,4 @@
 aiogram
 yt-dlp
-pillow
-moviepy
-requests
+Pillow
+google-generativeai
