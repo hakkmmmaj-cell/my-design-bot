@@ -3,3 +3,5 @@ tgcrypto
 yt-dlp
 python-telegram-bot
 yt-dlp
+aiogram==3.4.1
+google-generativeai
