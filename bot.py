@@ -1,61 +1,59 @@
-import requests
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
+import yt_dlp
 
-# 🔴 مفاتيحك
+# 🔴 توكن البوت
 BOT_TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
-OPENROUTER_API_KEY = "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"
 
 
-# 🤖 دالة الذكاء الاصطناعي
-def ask_ai(text):
-    try:
-        response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "mistralai/mistral-7b-instruct",
-                "messages": [{"role": "user", "content": text}]
-            },
-            timeout=30
-        )
+# 🎯 تحميل الفيديو
+def download_video(url):
+    ydl_opts = {
+        "format": "best",
+        "outtmpl": "video.mp4"
+    }
 
-        data = response.json()
-        return data["choices"][0]["message"]["content"]
-
-    except Exception as e:
-        print("AI ERROR:", e)
-        return "⚠️ صار خطأ بالذكاء الاصطناعي"
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
 
 
-# /start
+# 🚀 /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "👋 أهلاً بيك\nأرسل أي سؤال وأنا أجاوبك 🤖"
+        "🤖 بوت ابو كيان يرحب بك\n\n"
+        "👋 أهلاً بيك!\n"
+        "📥 ارسل رابط يوتيوب أو تيك توك وأنا أحمله لك"
     )
 
 
-# 💬 الدردشة
-async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_text = update.message.text
+# 💬 استقبال الرسائل
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
 
-    reply = ask_ai(user_text)
-    await update.message.reply_text(reply)
+    # إذا رابط
+    if "http" in text:
+        await update.message.reply_text("⏳ جاري التحميل...")
+
+        try:
+            download_video(text)
+
+            with open("video.mp4", "rb") as video:
+                await update.message.reply_video(video)
+
+        except Exception as e:
+            print("ERROR:", e)
+            await update.message.reply_text("❌ صار خطأ بالتحميل")
+
+    else:
+        await update.message.reply_text(
+            "📌 ارسل رابط فقط (يوتيوب / تيك توك)"
+        )
 
 
 # ▶️ تشغيل البوت
-def main():
-    app = Application.builder().token(BOT_TOKEN).build()
+app = Application.builder().token(BOT_TOKEN).build()
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat))
+app.add_handler(CommandHandler("start", start))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    print("🤖 Bot is running...")
-    app.run_polling()
-
-
-if __name__ == "__main__":
-    main()
+app.run_polling()
