@@ -7,3 +7,6 @@ aiogram==3.4.1
 google-generativeai
 python-telegram-bot
 requests
+fastapi
+uvicorn
+yt-dlp
