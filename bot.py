@@ -1,12 +1,7 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
-Application,
-CommandHandler,
-CallbackQueryHandler,
-ContextTypes
-)
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
-BOT_TOKEN = "PUT_NEW_TOKEN_HERE"
+BOT_TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
 
 CHANNEL_USERNAME = "@A_1_1_1W"
 
@@ -18,12 +13,11 @@ except:
 return False
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
 user_id = update.effective_user.id
 
 if not await check_subscription(user_id, context.bot):
     await update.message.reply_text(
-        "🚫 يجب الاشتراك بقناة أبو كيان أولاً:\nhttps://t.me/A_1_1_1W\n\nثم أرسل /start"
+        "🚫 يجب الاشتراك بالقناة أولاً:\nhttps://t.me/A_1_1_1W\n\nثم أرسل /start"
     )
     return
 
@@ -39,17 +33,11 @@ await update.message.reply_text(
 
 🤖 بوت أبو كيان يرحب بك
 
-━━━━━━━━━━━━━━
-
 📥 تحميل الفيديوهات
 🎵 تحويل الفيديو إلى MP3
 
-━━━━━━━━━━━━━━
-
 👑 المطور: أبو كيان
 🛡️ جميع الحقوق محفوظة
-
-اختر الخدمة من الأسفل 👇
 """,
 reply_markup=InlineKeyboardMarkup(keyboard)
 )
@@ -59,7 +47,7 @@ query = update.callback_query
 await query.answer()
 
 if query.data == "video":
-    await query.message.reply_text("📥 أرسل رابط TikTok")
+    await query.message.reply_text("📥 أرسل رابط الفيديو")
 
 elif query.data == "mp3":
     await query.message.reply_text("🎵 أرسل رابط الفيديو للتحويل إلى MP3")
