@@ -35,9 +35,8 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(response.text)
 
     except Exception as e:
-        print("GEMINI ERROR:", e)
-        await update.message.reply_text("⚠️ صار خطأ بالذكاء الاصطناعي")
-
+    print("🔥 FULL ERROR:", repr(e))
+    await update.message.reply_text(f"⚠️ خطأ: {e}")
 
 # تشغيل البوت
 def main():
