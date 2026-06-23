@@ -1,46 +1,40 @@
-import asyncio
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command
 import google.generativeai as genai
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
-# 🔐 ضع توكن البوت هنا
+# 🔴 توكن البوت
 BOT_TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
 
-# 🔑 ضع مفتاح Gemini هنا
+# 🔵 مفتاح Gemini
 GEMINI_API_KEY = "AQ.Ab8RN6I0i1dOOazZ6go_RRBhJ9Ps5T-tOZF8YiM58axOP2j0Dw"
 
-# تهيئة Gemini
+# إعداد Gemini
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-# تشغيل البوت
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
 
-# 🚀 أمر البداية
-@dp.message(Command("start"))
-async def start(message: types.Message):
-    await message.answer(
-        "🤖 أهلاً بك!\n"
-        "أرسل أي سؤال وأنا أجاوبك باستخدام الذكاء الاصطناعي."
-    )
+# 🤖 /start
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("👋 أهلاً بيك\nأرسل أي رسالة وأنا أجاوبك بالذكاء الاصطناعي 🤖")
 
-# 💬 الرد على الرسائل
-@dp.message()
-async def chat(message: types.Message):
+
+# 💬 الرد الذكي
+async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_text = update.message.text
+
     try:
-        user_text = message.text
-
         response = model.generate_content(user_text)
-        await message.answer(response.text)
+        await update.message.reply_text(response.text)
 
-    except Exception:
-        await message.answer("⚠️ صار خطأ، حاول مرة ثانية")
+    except Exception as e:
+        print("ERROR:", e)
+        await update.message.reply_text("⚠️ صار خطأ بالذكاء الاصطناعي")
+
 
 # ▶️ تشغيل البوت
-async def main():
-    print("AI Bot is running...")
-    await dp.start_polling(bot)
+app = Application.builder().token(BOT_TOKEN).build()
 
-if __name__ == "__main__":
-    asyncio.run(main())
+app.add_handler(CommandHandler("start", start))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat))
+
+app.run_polling()
