@@ -1,44 +1,79 @@
-import requests
+import logging
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
+import yt_dlp
+import uuid
+import os
 
-BOT_TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
+TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
 
-SERVER = "http://YOUR-SERVER-URL/download"
+DOWNLOAD_DIR = "downloads"
+os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+
+logging.basicConfig(level=logging.INFO)
 
 
+# =========================
+# تحميل الفيديو
+# =========================
+def download_video(url):
+    file_id = str(uuid.uuid4())
+    file_path = f"{DOWNLOAD_DIR}/{file_id}.mp4"
+
+    ydl_opts = {
+        "format": "best",
+        "outtmpl": file_path,
+        "noplaylist": True,
+        "quiet": True,
+        "geo_bypass": True,
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+
+    return file_path
+
+
+# =========================
+# start
+# =========================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "👑 بوت ابو كيان\n\nارسل رابط يوتيوب أو تيك توك"
+        "👑 بوت أبو كيان يرحب بك\n\n"
+        "📥 أرسل رابط يوتيوب أو تيك توك\n"
+        "⚡ وسيتم التحميل فوراً"
     )
 
 
+# =========================
+# handle messages
+# =========================
 async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = update.message.text
 
     if "http" not in url:
-        await update.message.reply_text("📌 ارسل رابط فقط")
+        await update.message.reply_text("📌 أرسل رابط صحيح")
         return
 
     await update.message.reply_text("⚡ جاري التحميل...")
 
     try:
-        r = requests.get(f"{SERVER}?url={url}&type=video")
+        file_path = download_video(url)
 
-        if r.status_code == 200:
-            with open("file.mp4", "wb") as f:
-                f.write(r.content)
+        with open(file_path, "rb") as f:
+            await update.message.reply_video(
+                f,
+                caption="👑 تم التحميل بواسطة بوت أبو كيان"
+            )
 
-            with open("file.mp4", "rb") as f:
-                await update.message.reply_video(f)
-        else:
-            await update.message.reply_text("❌ فشل التحميل")
-
-    except:
-        await update.message.reply_text("❌ خطأ بالسيرفر")
+    except Exception as e:
+        await update.message.reply_text(f"❌ فشل التحميل\n{e}")
 
 
-app = Application.builder().token(BOT_TOKEN).build()
+# =========================
+# تشغيل البوت
+# =========================
+app = Application.builder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle))
