@@ -8,30 +8,32 @@ DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 
-def download(url, audio=False):
+def download_file(url):
     file_id = str(uuid.uuid4())
-    out = f"{DOWNLOAD_DIR}/{file_id}"
+    out = f"{DOWNLOAD_DIR}/{file_id}.mp4"
 
-    opts = {
-        "quiet": True,
+    ydl_opts = {
+        "format": "best",
+        "outtmpl": out,
         "noplaylist": True,
-        "format": "bestaudio/best" if audio else "bestvideo+bestaudio/best",
-        "outtmpl": out + (".mp3" if audio else ".mp4"),
+        "quiet": True,
+        "geo_bypass": True,
+        "nocheckcertificate": True,
+        "retries": 5
     }
 
-    if audio:
-        opts["postprocessors"] = [{
-            "key": "FFmpegExtractAudio",
-            "preferredcodec": "mp3"
-        }]
-
-    with yt_dlp.YoutubeDL(opts) as ydl:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
-    return out + (".mp3" if audio else ".mp4")
+    return out
 
 
 @app.get("/download")
-def download_file(url: str, type: str = "video"):
-    file_path = download(url, audio=(type == "audio"))
-    return FileResponse(file_path)
+def download(url: str):
+    try:
+        file_path = download_file(url)
+        return FileResponse(file_path, media_type="video/mp4")
+
+    except Exception as e:
+        print("SERVER ERROR:", e)
+        return {"error": "download failed"}
