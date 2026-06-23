@@ -1,4 +1,2 @@
-aiogram
+python-telegram-bot
 yt-dlp
-opencv-python
-numpy
