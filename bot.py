@@ -1,61 +1,46 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+import asyncio
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
+import google.generativeai as genai
 
+# 🔐 ضع توكن البوت هنا
 BOT_TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
 
-CHANNEL_USERNAME = "@A_1_1_1W"
+# 🔑 ضع مفتاح Gemini هنا
+GEMINI_API_KEY = "AQ.Ab8RN6I0i1dOOazZ6go_RRBhJ9Ps5T-tOZF8YiM58axOP2j0Dw"
 
-async def check_subscription(user_id, bot):
-try:
-member = await bot.get_chat_member(CHANNEL_USERNAME, user_id)
-return member.status in ["member", "administrator", "creator"]
-except:
-return False
+# تهيئة Gemini
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-user_id = update.effective_user.id
+# تشغيل البوت
+bot = Bot(token=BOT_TOKEN)
+dp = Dispatcher()
 
-if not await check_subscription(user_id, context.bot):
-    await update.message.reply_text(
-        "🚫 يجب الاشتراك بالقناة أولاً:\nhttps://t.me/A_1_1_1W\n\nثم أرسل /start"
+# 🚀 أمر البداية
+@dp.message(Command("start"))
+async def start(message: types.Message):
+    await message.answer(
+        "🤖 أهلاً بك!\n"
+        "أرسل أي سؤال وأنا أجاوبك باستخدام الذكاء الاصطناعي."
     )
-    return
 
-keyboard = [
-    [InlineKeyboardButton("📥 تحميل فيديو", callback_data="video")],
-    [InlineKeyboardButton("🎵 تحويل MP3", callback_data="mp3")]
-]
+# 💬 الرد على الرسائل
+@dp.message()
+async def chat(message: types.Message):
+    try:
+        user_text = message.text
 
-await update.message.reply_text(
-    f"""
+        response = model.generate_content(user_text)
+        await message.answer(response.text)
 
-👋 أهلاً {update.effective_user.first_name}
+    except Exception:
+        await message.answer("⚠️ صار خطأ، حاول مرة ثانية")
 
-🤖 بوت أبو كيان يرحب بك
+# ▶️ تشغيل البوت
+async def main():
+    print("AI Bot is running...")
+    await dp.start_polling(bot)
 
-📥 تحميل الفيديوهات
-🎵 تحويل الفيديو إلى MP3
-
-👑 المطور: أبو كيان
-🛡️ جميع الحقوق محفوظة
-""",
-reply_markup=InlineKeyboardMarkup(keyboard)
-)
-
-async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
-query = update.callback_query
-await query.answer()
-
-if query.data == "video":
-    await query.message.reply_text("📥 أرسل رابط الفيديو")
-
-elif query.data == "mp3":
-    await query.message.reply_text("🎵 أرسل رابط الفيديو للتحويل إلى MP3")
-
-app = Application.builder().token(BOT_TOKEN).build()
-
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CallbackQueryHandler(buttons))
-
-print("Bot Running...")
-app.run_polling()
+if __name__ == "__main__":
+    asyncio.run(main())
