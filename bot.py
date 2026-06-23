@@ -6,7 +6,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 BOT_TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
 
 # 🔵 مفتاح Gemini
-GEMINI_API_KEY = "AQ.Ab8RN6I0i1dOOazZ6go_RRBhJ9Ps5T-tOZF8YiM58axOP2j0Dw"
+GEMINI_API_KEY = "AQ.Ab8RN6KwcS-c-biVhi3x_d_fCcnxOWYNMLmyPhMzTQQm4OHM4w"
 
 # إعداد Gemini
 genai.configure(api_key=GEMINI_API_KEY)
