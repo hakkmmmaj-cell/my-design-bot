@@ -3,23 +3,26 @@ import yt_dlp
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-# توكن البوت الخاص بك
+# ضع التوكن الخاص بك هنا
 TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("أهلاً بك! أرسل لي أي رابط من يوتيوب أو تيك توك وسأقوم بتحميله لك بجودة عالية.")
+    await update.message.reply_text("أهلاً بك! أرسل رابط الفيديو وسأقوم بتحميله لك.")
 
 async def download_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
     url = update.message.text
     chat_id = update.message.chat_id
     
-    await update.message.reply_text("⏳ جاري المعالجة... يرجى الانتظار")
+    # رسالة انتظار
+    status_msg = await update.message.reply_text("⏳ جاري المعالجة والتحميل... يرجى الانتظار")
 
-    # إعدادات yt-dlp القوية للتحميل
+    # إعدادات قوية لتجاوز حظر يوتيوب
     ydl_opts = {
-        'format': 'bestvideo+bestaudio/best',  # اختيار أفضل جودة
-        'outtmpl': f'downloads/{chat_id}.%(ext)s', # حفظ الفيديو برقم المستخدم
+        'format': 'bestvideo+bestaudio/best',
+        'outtmpl': f'downloads/{chat_id}.%(ext)s',
         'noplaylist': True,
+        # هذا السطر يجعل السيرفر يتنكر كمتصفح حقيقي لتجاوز حظر يوتيوب
+        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
     }
 
     try:
@@ -30,13 +33,13 @@ async def download_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # إرسال الفيديو للمستخدم
         await update.message.reply_video(video=open(filename, 'rb'))
         
-        # حذف الملف من السيرفر بعد الإرسال لتوفير المساحة
+        # حذف الملف بعد الإرسال
         os.remove(filename)
+        await status_msg.delete()
 
     except Exception as e:
-        await update.message.reply_text(f"❌ حدث خطأ أثناء التحميل: {str(e)}")
+        await status_msg.edit_text(f"❌ حدث خطأ: {str(e)}\nربما الفيديو خاص أو محظور إقليمياً.")
 
-# إعداد التطبيق
 if __name__ == '__main__':
     if not os.path.exists('downloads'):
         os.makedirs('downloads')
@@ -45,5 +48,4 @@ if __name__ == '__main__':
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, download_video))
     
-    print("البوت يعمل الآن...")
     app.run_polling()
