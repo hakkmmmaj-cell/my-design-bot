@@ -1,50 +1,49 @@
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
-import yt_dlp
 import os
+import yt_dlp
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-TOKEN = "8656297195:AAHCaNApCb0oi6lElpvxamf3uL8-L9DaRec"
+# توكن البوت الخاص بك
+TOKEN = "8835938014:AAE68WNbEemZHQYK_5Z810M5uqrONkrmBYc"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "👋 بوت أبو كيان يرحب بك\n\n"
-        "📥 أرسل رابط يوتيوب أو تيك توك للتحميل."
-    )
+    await update.message.reply_text("أهلاً بك! أرسل لي أي رابط من يوتيوب أو تيك توك وسأقوم بتحميله لك بجودة عالية.")
 
-async def download(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    url = update.message.text.strip()
+async def download_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    url = update.message.text
+    chat_id = update.message.chat_id
+    
+    await update.message.reply_text("⏳ جاري المعالجة... يرجى الانتظار")
 
-    await update.message.reply_text("⏳ جاري التحميل...")
+    # إعدادات yt-dlp القوية للتحميل
+    ydl_opts = {
+        'format': 'bestvideo+bestaudio/best',  # اختيار أفضل جودة
+        'outtmpl': f'downloads/{chat_id}.%(ext)s', # حفظ الفيديو برقم المستخدم
+        'noplaylist': True,
+    }
 
     try:
-        ydl_opts = {
-            "format": "best",
-            "outtmpl": "video.%(ext)s",
-            "noplaylist": True
-        }
-
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info)
 
-        file_name = None
-        for f in os.listdir():
-            if f.startswith("video."):
-                file_name = f
-                break
-
-        if file_name:
-            with open(file_name, "rb") as video:
-                await update.message.reply_video(video)
-
-            os.remove(file_name)
+        # إرسال الفيديو للمستخدم
+        await update.message.reply_video(video=open(filename, 'rb'))
+        
+        # حذف الملف من السيرفر بعد الإرسال لتوفير المساحة
+        os.remove(filename)
 
     except Exception as e:
-        await update.message.reply_text(f"❌ خطأ: {e}")
+        await update.message.reply_text(f"❌ حدث خطأ أثناء التحميل: {str(e)}")
 
-app = Application.builder().token(TOKEN).build()
-
-app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, download))
-
-print("✅ Bot Started")
-app.run_polling()
+# إعداد التطبيق
+if __name__ == '__main__':
+    if not os.path.exists('downloads'):
+        os.makedirs('downloads')
+        
+    app = ApplicationBuilder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, download_video))
+    
+    print("البوت يعمل الآن...")
+    app.run_polling()
